@@ -1,0 +1,52 @@
+[package]
+name = "docs-witness"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+authors = ["Wyatt Au <wyatt_au@protonmail.com>"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/WyattAu/docs-witness"
+homepage = "https://github.com/WyattAu/docs-witness"
+documentation = "https://docs.rs/docs-witness"
+description = "Deterministic WASI snippet execution witnesses for docs sites: fresh wasmtime instance per run, fuel-bounded, captured stdout/exit/fuel, serializable payload. docs-core extension program (SPEC.md REQ-W)"
+readme = "README.md"
+keywords = ["wasmtime", "wasi", "sandbox", "documentation", "doctest"]
+categories = ["development-tools", "wasm"]
+exclude = [".github/", "supply-chain/"]
+
+# Layer model: docs/layers.md in WyattAu/engineering-standards.
+# L1 - substrate: runtime/platform infrastructure (a WASM execution
+# harness). Zero estate-internal dependencies; the external floor is the
+# wasmtime stack. The compiler (L3) compiles snippets to wasm32-wasip1 and
+# feeds the bytes here; this crate never sees source text.
+[package.metadata.layers]
+tier = "L1"
+
+[dependencies]
+serde = { version = "1.0.229", features = ["derive"] }
+thiserror = "2"
+wasmtime = "34.0.2"
+wasmtime-wasi = "34.0.2"
+
+[lints.rust]
+missing_docs = "deny"
+unsafe_code = "deny"
+
+# Content discipline: a compiled snippet is untrusted input. Execution is
+# total: traps, fuel exhaustion, and missing entrypoints are typed errors,
+# never panics.
+[lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+indexing_slicing = "deny"
+undocumented_unsafe_blocks = "deny"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true
+
+[dev-dependencies]
+serde_json = "1.0.154"
+wat = "1.258.3"
