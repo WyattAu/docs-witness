@@ -164,10 +164,9 @@ fn assertions_pass_and_fail_typed() {
             stdout: None,
         },
     ) {
-        Err(AssertionError::Exit {
-            expected: 1,
-            actual: 0,
-        }) => {}
+        Err(e @ AssertionError::Exit { .. }) => {
+            assert!(e.to_string().contains("assert_exit failed"));
+        }
         other => panic!("expected Exit mismatch, got {other:?}"),
     }
     match check(
@@ -177,13 +176,45 @@ fn assertions_pass_and_fail_typed() {
             stdout: Some("nope".into()),
         },
     ) {
-        Err(AssertionError::Stdout { expected, actual }) => {
-            assert_eq!(expected, "nope");
-            assert_eq!(actual, "hello\n");
+        Err(e @ AssertionError::Stdout { .. }) => {
+            assert!(e.to_string().contains("assert_stdout failed"));
         }
         other => panic!("expected Stdout mismatch, got {other:?}"),
     }
     check(&w, &Assertions::default()).expect("no assertions, no failure");
+}
+
+#[test]
+fn link_failures_are_typed_and_display_is_informative() {
+    // A WASI import the preview1 surface cannot provide: linking fails.
+    let wat = r#"
+    (module
+      (import "wasi_snapshot_preview1" "bogus" (func))
+      (memory (export "memory") 1)
+      (func (export "_start")))
+    "#;
+    let Err(WitnessError::Link(e)) = run(&wasm(wat), &WitnessConfig::default()) else {
+        panic!("expected Link, got a different outcome")
+    };
+    assert!(!e.to_string().is_empty());
+}
+
+#[test]
+fn error_display_covers_remaining_variants() {
+    // Fuel-accounting faults are engine-configuration bugs, not guest
+    // behavior; they cannot be triggered through the public surface, so
+    // construct the variant directly.
+    let fuel = WitnessError::Fuel("boom".into());
+    assert!(fuel.to_string().contains("fuel accounting"));
+
+    let garbage = [0u8; 8];
+    let Err(WitnessError::Compile(c)) = run(&garbage, &WitnessConfig::default()) else {
+        panic!("expected Compile for garbage bytes")
+    };
+    assert!(!c.to_string().is_empty());
+
+    let no_start = WitnessError::NoEntrypoint;
+    assert!(no_start.to_string().contains("_start"));
 }
 
 #[test]

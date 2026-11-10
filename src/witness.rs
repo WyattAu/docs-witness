@@ -4,9 +4,8 @@ use std::time::Instant;
 
 use wasmtime::{Config, Engine, Linker, Module, Store, Trap};
 use wasmtime_wasi::p2::pipe::MemoryOutputPipe;
-use wasmtime_wasi::p2::WasiCtxBuilder;
 use wasmtime_wasi::preview1::{self, WasiP1Ctx};
-use wasmtime_wasi::I32Exit;
+use wasmtime_wasi::{I32Exit, WasiCtxBuilder};
 
 use crate::error::WitnessError;
 

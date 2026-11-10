@@ -2,7 +2,7 @@
 name = "docs-witness"
 version = "0.1.0"
 edition = "2021"
-rust-version = "1.85"
+rust-version = "1.86.0"
 authors = ["Wyatt Au <wyatt_au@protonmail.com>"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/WyattAu/docs-witness"
@@ -25,8 +25,19 @@ tier = "L1"
 [dependencies]
 serde = { version = "1.0.229", features = ["derive"] }
 thiserror = "2"
-wasmtime = "34.0.2"
-wasmtime-wasi = "34.0.2"
+# >=36.0.3: RUSTSEC-2025-0118 (shared-memory unsoundness) is patched on the
+# 36 line; 34.0.2 is affected and cargo-deny blocks it (SECURITY.md: wasmtime
+# advisories are blocking). Default features are deliberately off: no
+# `profiling` (drops the unmaintained fxhash chain via fxprof-processed-
+# profile), no `threads` (no shared linear memories at all), no `wat` (the
+# API contract is compiled bytes only), no component-model/gc. MSRV 1.86
+# follows wasmtime 36.
+wasmtime = { version = "36.0.3", default-features = false, features = [
+  "cranelift",
+  "runtime",
+  "std",
+] }
+wasmtime-wasi = "36.0.3" # defaults: p2 is the builder substrate for the p1 context; component surface is compile-time only (the linker offers preview1 exclusively)
 
 [lints.rust]
 missing_docs = "deny"
