@@ -43,6 +43,16 @@ Filesystem/socket WASI, wall-clock timeouts, stdin injection,
 snapshotting/time travel. Each is a later increment with its own
 requirement in `docs-core/SPEC.md`; none is silently missing.
 
+## Where the truth lives
+
+| Concern | Truth | Path |
+|---|---|---|
+| Deterministic run, fuel bounds, capture | source of record | `src/witness.rs` |
+| Assertion contract (stdout/exit) | source of record | `src/asserts.rs` |
+| Typed failures | source of record | `src/error.rs` |
+| REQ-W anchors (execution witnesses) | SPEC | `docs-core/SPEC.md` |
+| Layer declaration + wasmtime floor | manifest metadata | `Cargo.toml` |
+
 ## Layer
 
 L1 - substrate: a WASM execution harness. Zero estate-internal
