@@ -20,3 +20,12 @@ All notable changes to this project are documented in this file.
 - Tests: determinism, fuel exhaustion, trap typing, capacity bounding,
   missing entrypoints, invalid bytes, assertion pass/fail, payload
   round-trip.
+
+## [0.1.1] - 2026-11-18
+
+### Security
+
+- wasmtime / wasmtime-wasi bumped to 36.0.23: RUSTSEC-2026-0566/0567/
+  0569/0571 (fd_renumber panic, shared-memory unsoundness, unbounded
+  host memory growth) are patched in >=36.0.21 on the 36 line — the
+  pinned major for the RUSTSEC-2025-0118 constraint stays satisfied.
